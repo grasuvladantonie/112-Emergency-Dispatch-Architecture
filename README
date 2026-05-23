@@ -1,0 +1,43 @@
+Tema 1 SDA - Sistem de gestionare al apelurilor 112
+
+1. Structuri de date utilizate:
+
+-Liste dublu înlănțuite circulare cu santinelă: Au fost utilizate pentru lista generală de incidente și pentru lista de intervenții. Santinela incidentelor a fost inițializată cu datele incidentului fictiv din cerință. Inserarea elementelor noi se face mereu la finalul listei (adică înaintea santinelei)
+
+-Cozi: Există trei cozi separate pentru prioritizarea incidentelor (queue_high, queue_medium, queue_low) și o coadă pentru echipajele de intervenție disponibile (queue_available_units). În aceste cozi se stochează doar pointeri către structurile deja existente în listele principale sau în vectorul de unități, evitându-se duplicarea datelor.
+
+-Stivă: A fost folosită pentru a reține istoricul intervențiilor demarate. Este implementată printr-o listă simplu înlănțuită iar
+eliminarea si adaugarea elementelor se face prin operatiile push()
+si pop()
+
+-Structura centralizată (system1): Pentru a nu folosi variabile globale, toți pointerii către restul structurilor de date au fost grupate într-o singură structură mare alocată dinamic, care este transmisă ca parametru funcțiilor.
+
+2. Implementarea operatiilor:
+
+-ADD_INCIDENT: Se citesc datele de intrare. Pentru descrierea incidentului, se sare peste prima ghilimea din fișier și se citește caracter cu caracter într-un buffer până la a doua ghilimea. Apoi se alocă exact strlen(buffer) + 1 octeți de memorie pentru descriere. Incidentul nou este adăugat în lista dublu înlănțuită și, în funcție de prioritate, pointerul său este introdus la finalul cozii corespunzătoare.
+
+-DISPATCH: Se verifică dacă există cel puțin un echipaj disponibil și cel puțin un incident într-una dintre cele 3 cozi. Se extrage un echipaj din coadă și un incident din cea mai prioritară coadă nevidă (ordinea fiind high, medium, low). Statusurile sunt actualizate, se creează un nod nou în lista de intervenții, iar pointerul acestei intervenții este salvat pe stivă.
+
+-UNDO_LAST_DISPATCH: Se extrag elemente din stivă folosind pop până când se găsește o intervenție care are statusul incidentului "intervened" (intervențiile finalizate sunt eliminate). Incidentul este marcat din nou "queued" și este pus fix la începutul cozii sale specifice, folosind o funcție separată de inserare. Echipajul redevine "available" și este pus la finalul cozii de disponibilitate. De asemenea, nodul intervenției este scos din lista dublu înlănțuită și eliberat din memorie.
+
+-SOLVED_INCIDENT: Se parcurge lista de intervenții pentru a găsi ID-ul incidentului dat. Dacă se găsește și statusul acestuia este încă "intervened", statusul se schimbă în "solved", iar echipajul de pe acea intervenție este eliberat și introdus din nou în coada de disponibilități.
+
+-Operațiile SHOW: Se parcurg listele corespunzătoare și se afișează informațiile cerute conform formatului specificat.
+
+3. Gestionarea memoriei:
+
+Eliberarea memoriei se realizeaza printr-o functie dedicata care realizeaza urmatoarele:
+
+-Golește stiva de istoric
+
+-Golește toate cele 4 cozi. Se eliberează doar nodurile cozilor, nu și conținutul lor, deoarece datele reale trebuie să rămână intacte pentru listele principale.
+
+-Parcurge lista dublu înlănțuită de intervenții și eliberează fiecare nod.
+
+-Parcurge lista dublu înlănțuită de incidente. Pentru fiecare incident se dă free mai întâi memoriei alocate pentru description, apoi nodului în sine.
+
+-Eliberează vectorul de echipaje alocat inițial.   
+
+-Eliberează structura principală a sistemului.
+
+Punctaje obtinute la teste: 120/120
